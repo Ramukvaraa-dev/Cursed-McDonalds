@@ -2,8 +2,17 @@ import os
 import re
 import sys
 from pathlib import Path
+import runpy
 
 import pygame
+
+
+def _base_dir() -> Path:
+    # PyInstaller sets sys._MEIPASS to the extracted/bundle resource dir.
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        return Path(meipass).resolve()
+    return Path(__file__).resolve().parent
 
 
 def _extract_level_title(script_path: Path) -> str:
@@ -26,7 +35,7 @@ def _extract_level_title(script_path: Path) -> str:
 
 
 def _discover_levels() -> list[dict]:
-    here = Path(__file__).resolve().parent
+    here = _base_dir()
     search_roots = [here, here / "Cursed McDonalds 1"]
     levels: list[dict] = []
 
@@ -64,9 +73,10 @@ def _pick_level1_script(discovered: list[dict]) -> Path | None:
     return discovered[0]["path"]
 
 
-def _exec_game(game_script: Path) -> None:
+def _run_game(game_script: Path) -> None:
     os.chdir(str(game_script.parent))
-    os.execv(sys.executable, [sys.executable, str(game_script)])
+    # Run in-process so this works inside a PyInstaller-bundled app.
+    runpy.run_path(str(game_script), run_name="__main__")
 
 
 def main() -> None:
@@ -100,7 +110,25 @@ def main() -> None:
     font_ui = get_font(["Avenir Next", "Avenir", "Verdana", "Arial"], 24, bold=True)
     font_hint = get_font(["Avenir Next", "Avenir", "Verdana", "Arial"], 16, bold=False)
 
-    here = Path(__file__).resolve().parent
+    here = _base_dir()
+
+    # Window icon (best-effort; keep app runnable if missing)
+    fallback_icon = pygame.Surface((32, 32), pygame.SRCALPHA)
+    fallback_icon.fill(PAPER)
+    pygame.display.set_icon(fallback_icon)
+    for candidate in (
+        here / "Cursed McDonalds Logo.ico",
+        here / "Cursed McDonalds Logo.png",
+        here / "Cursed McDonalds 1" / "Cursed McDonalds Logo.ico",
+        here / "Cursed McDonalds 1" / "Cursed McDonalds Logo.png",
+    ):
+        try:
+            icon = pygame.image.load(str(candidate))
+            pygame.display.set_icon(icon)
+            break
+        except Exception:
+            pass
+
     logo = None
     for candidate in (
         here / "Cursed McDonalds 1" / "Cursed McDonalds Logo.png",
@@ -315,10 +343,13 @@ def main() -> None:
                 elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
                     if screen_name == "home":
                         screen_name = "levels"
-                elif screen_name == "levels" and level1_script is not None:
-                    if event.key in (pygame.K_1, pygame.K_RETURN, pygame.K_KP_ENTER):
+                    elif screen_name == "levels" and level1_script is not None:
                         pygame.quit()
-                        _exec_game(level1_script)
+                        _run_game(level1_script)
+                elif screen_name == "levels" and level1_script is not None:
+                    if event.key == pygame.K_1:
+                        pygame.quit()
+                        _run_game(level1_script)
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if screen_name == "home":
                     if home_start_btn and home_start_btn.collidepoint(event.pos):
@@ -330,7 +361,7 @@ def main() -> None:
                         for rect, level_num in level_buttons:
                             if rect.collidepoint(event.pos) and level_num == 1 and level1_script is not None:
                                 pygame.quit()
-                                _exec_game(level1_script)
+                                _run_game(level1_script)
 
         pygame.display.flip()
         clock.tick(60)
