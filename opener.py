@@ -53,6 +53,17 @@ def _discover_levels() -> list[dict]:
     return unique
 
 
+def _pick_level1_script(discovered: list[dict]) -> Path | None:
+    if not discovered:
+        return None
+    for lvl in discovered:
+        title = str(lvl.get("title", "")).lower()
+        if "level 1" in title or "lvl 1" in title or "level1" in title:
+            return lvl["path"]
+    # Fallback: first discovered script.
+    return discovered[0]["path"]
+
+
 def _exec_game(game_script: Path) -> None:
     os.chdir(str(game_script.parent))
     os.execv(sys.executable, [sys.executable, str(game_script)])
@@ -124,14 +135,20 @@ def main() -> None:
         surface.blit(shadow, (rect.x + shadow_offset[0], rect.y + shadow_offset[1]))
         pygame.draw.rect(surface, fill, rect, border_radius=radius)
 
-    def draw_button(surface, text, rect, hovered, pressed):
-        fill = PAPER if hovered else TOMATO
-        text_rgb = TOMATO if hovered else (255, 255, 255)
+    def draw_button(surface, text, rect, hovered, pressed, enabled=True):
+        if not enabled:
+            fill = (232, 224, 214)
+            text_rgb = (120, 110, 100)
+            border = (200, 190, 178)
+        else:
+            fill = PAPER if hovered else TOMATO
+            text_rgb = TOMATO if hovered else (255, 255, 255)
+            border = TOMATO if hovered else None
 
         bsurf = pygame.Surface((rect.w, rect.h), pygame.SRCALPHA)
         pygame.draw.rect(bsurf, (*fill, 255), bsurf.get_rect(), border_radius=16)
-        if hovered:
-            pygame.draw.rect(bsurf, (*TOMATO, 255), bsurf.get_rect(), width=2, border_radius=16)
+        if border is not None:
+            pygame.draw.rect(bsurf, (*border, 255), bsurf.get_rect(), width=2, border_radius=16)
 
         label = font_ui.render(text, True, text_rgb)
         bsurf.blit(label, label.get_rect(center=(rect.w // 2, rect.h // 2)))
@@ -139,14 +156,14 @@ def main() -> None:
         shadow = pygame.Surface((rect.w, rect.h), pygame.SRCALPHA)
         pygame.draw.rect(shadow, SHADOW, shadow.get_rect(), border_radius=16)
         surface.blit(shadow, (rect.x, rect.y + 6))
-        surface.blit(bsurf, (rect.x, rect.y + (2 if pressed else 0)))
+        surface.blit(bsurf, (rect.x, rect.y + ((2 if pressed else 0) if enabled else 0)))
 
     levels = _discover_levels()
-    error_text = None if levels else "No level files found."
+    level1_script = _pick_level1_script(levels)
+    error_text = None if level1_script else "Level 1 file not found."
 
     clock = pygame.time.Clock()
     screen_name = "home"  # "home" | "levels"
-    scroll_index = 0
 
     running = True
     while running:
@@ -186,9 +203,10 @@ def main() -> None:
             if error_text:
                 body_lines = [error_text, "Put level .py files next to this folder."] + body_lines
         else:
-            body_lines = ["Pick a level to play.", "Keys: 1-9 choose, Esc back"]
-            if not levels:
-                body_lines = ["No levels found.", "Add a level .py file and restart."]
+            # Level select screen draws its own header/helper to avoid overlap.
+            body_lines = []
+            if not level1_script:
+                body_lines = ["Level 1 not found.", "Add your level file and restart."]
 
         y = panel.y + 156
         for line in body_lines:
@@ -205,61 +223,82 @@ def main() -> None:
         gap = 14
         home_start_btn = None
         back_btn = None
-        level_buttons: list[tuple[pygame.Rect, dict]] = []
-        visible_levels: list[dict] = []
-        max_btns_for_scroll = 0
+        level_buttons: list[tuple[pygame.Rect, int]] = []
+        hover_message = None
 
         if screen_name == "home":
             btn = pygame.Rect(panel.x + (panel.w - btn_w) // 2, panel.bottom - 120, btn_w, btn_h)
             home_start_btn = btn
             hovered = btn.collidepoint(mouse)
-            draw_button(screen, "Start", btn, hovered=hovered, pressed=pressed and hovered)
+            draw_button(screen, "Start", btn, hovered=hovered, pressed=pressed and hovered, enabled=True)
         else:
-            list_top = panel.y + 210
-            list_bottom = panel.bottom - 88
-            area_h = max(0, list_bottom - list_top)
-            max_btns = max(1, area_h // (btn_h + gap))
-            max_btns_for_scroll = max_btns
-            max_scroll = max(0, len(levels) - max_btns)
-            scroll_index = max(0, min(scroll_index, max_scroll))
-            visible = levels[scroll_index : scroll_index + max_btns]
-            visible_levels = visible
-
-            start_y = list_top
-            for idx, lvl in enumerate(visible):
-                rect = pygame.Rect(panel.x + (panel.w - btn_w) // 2, start_y + idx * (btn_h + gap), btn_w, btn_h)
-                hovered = rect.collidepoint(mouse)
-                draw_button(
-                    screen,
-                    f"{idx+1}. {lvl['title']}",
-                    rect,
-                    hovered=hovered,
-                    pressed=pressed and hovered,
-                )
-                level_buttons.append((rect, lvl))
+            # Header + helper text
+            header = font_body.render("Season 1", True, (70, 62, 54))
+            helper = font_hint.render("Level 1 is playable. Hover others for Coming soon.", True, (110, 100, 88))
+            header_x = panel.x + 28
+            header_y = panel.y + 140
+            helper_y = header_y + header.get_height() + 6
+            screen.blit(header, (header_x, header_y))
+            screen.blit(helper, (header_x, helper_y))
 
             back = pygame.Rect(panel.x + 28, panel.bottom - 120, 170, btn_h)
             back_btn = back
             hovered = back.collidepoint(mouse)
-            draw_button(screen, "Back", back, hovered=hovered, pressed=pressed and hovered)
+            draw_button(screen, "Back", back, hovered=hovered, pressed=pressed and hovered, enabled=True)
 
-            prev_btn = pygame.Rect(panel.right - 28 - 170 - 12 - 170, panel.bottom - 120, 170, btn_h)
-            next_btn = pygame.Rect(panel.right - 28 - 170, panel.bottom - 120, 170, btn_h)
-            hovered = prev_btn.collidepoint(mouse)
-            draw_button(screen, "Prev \u2190", prev_btn, hovered=hovered, pressed=pressed and hovered)
-            hovered = next_btn.collidepoint(mouse)
-            draw_button(screen, "Next \u2192", next_btn, hovered=hovered, pressed=pressed and hovered)
+            # Grid of 10 levels (only Level 1 available)
+            grid_top = helper_y + helper.get_height() + 16
+            grid_left = panel.x + 28
+            grid_right = panel.right - 28
+            grid_bottom = back.top - 18
+            grid_w = max(0, grid_right - grid_left)
+            grid_h = max(0, grid_bottom - grid_top)
 
-            # Small scroll status text
-            if levels:
-                start_n = scroll_index + 1
-                end_n = min(len(levels), scroll_index + len(visible_levels))
-                status = font_hint.render(
-                    f"Showing {start_n}-{end_n} of {len(levels)} (scroll / \u2191\u2193 / \u2190\u2192)",
-                    True,
-                    (110, 100, 88),
+            # Prefer a wide grid if there is room.
+            if panel.w >= 720:
+                cols, rows = 5, 2
+            else:
+                cols, rows = 2, 5
+
+            cell_gap_x = 12
+            cell_gap_y = 14
+            cell_h = 56
+            cell_w = (grid_w - cell_gap_x * (cols - 1)) // cols if cols else grid_w
+
+            total_h = rows * cell_h + (rows - 1) * cell_gap_y
+            start_y = grid_top + max(0, (grid_h - total_h) // 2)
+
+            for i in range(10):
+                level_num = i + 1
+                r = i // cols
+                c = i % cols
+                x = grid_left + c * (cell_w + cell_gap_x)
+                y = start_y + r * (cell_h + cell_gap_y)
+                rect = pygame.Rect(x, y, cell_w, cell_h)
+
+                enabled = level_num == 1 and level1_script is not None
+                hovered = rect.collidepoint(mouse)
+                draw_button(
+                    screen,
+                    f"Level {level_num}",
+                    rect,
+                    hovered=hovered,
+                    pressed=pressed and hovered,
+                    enabled=enabled,
                 )
-                screen.blit(status, (panel.x + 28, panel.y + 156))
+                level_buttons.append((rect, level_num))
+
+                if hovered and level_num > 1:
+                    hover_message = "Coming soon"
+                elif hovered and level_num == 1:
+                    hover_message = "Click to play"
+
+            if hover_message:
+                # Tooltip-like message near bottom center.
+                msg = font_hint.render(hover_message, True, (110, 100, 88))
+                msg_x = panel.x + (panel.w - msg.get_width()) // 2
+                msg_y = back.top - msg.get_height() - 10
+                screen.blit(msg, (msg_x, msg_y))
 
         hint = font_hint.render("If the window is blank, click it to focus.", True, (110, 100, 88))
         screen.blit(hint, (panel.x + 28, panel.bottom - 28))
@@ -276,55 +315,22 @@ def main() -> None:
                 elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
                     if screen_name == "home":
                         screen_name = "levels"
-                        scroll_index = 0
-                elif screen_name == "levels":
-                    if event.key in (pygame.K_UP, pygame.K_w):
-                        scroll_index -= 1
-                    elif event.key in (pygame.K_DOWN, pygame.K_s):
-                        scroll_index += 1
-                    elif event.key in (pygame.K_LEFT, pygame.K_a):
-                        scroll_index -= max(1, max_btns_for_scroll)
-                    elif event.key in (pygame.K_RIGHT, pygame.K_d):
-                        scroll_index += max(1, max_btns_for_scroll)
-                    elif event.key == pygame.K_PAGEUP:
-                        scroll_index -= max(1, max_btns_for_scroll - 1)
-                    elif event.key == pygame.K_PAGEDOWN:
-                        scroll_index += max(1, max_btns_for_scroll - 1)
-                    elif event.key == pygame.K_HOME:
-                        scroll_index = 0
-                    elif event.key == pygame.K_END:
-                        scroll_index = max(0, len(levels) - max(1, max_btns_for_scroll))
-                    elif pygame.K_1 <= event.key <= pygame.K_9:
-                        idx = event.key - pygame.K_1
-                        if 0 <= idx < len(visible_levels):
-                            pygame.quit()
-                            _exec_game(visible_levels[idx]["path"])
+                elif screen_name == "levels" and level1_script is not None:
+                    if event.key in (pygame.K_1, pygame.K_RETURN, pygame.K_KP_ENTER):
+                        pygame.quit()
+                        _exec_game(level1_script)
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if screen_name == "home":
                     if home_start_btn and home_start_btn.collidepoint(event.pos):
                         screen_name = "levels"
-                        scroll_index = 0
                 else:
                     if back_btn and back_btn.collidepoint(event.pos):
                         screen_name = "home"
-                    elif "prev_btn" in locals() and prev_btn.collidepoint(event.pos):
-                        scroll_index -= max(1, max_btns_for_scroll)
-                    elif "next_btn" in locals() and next_btn.collidepoint(event.pos):
-                        scroll_index += max(1, max_btns_for_scroll)
                     else:
-                        for rect, lvl in level_buttons:
-                            if rect.collidepoint(event.pos):
+                        for rect, level_num in level_buttons:
+                            if rect.collidepoint(event.pos) and level_num == 1 and level1_script is not None:
                                 pygame.quit()
-                                _exec_game(lvl["path"])
-            elif event.type == pygame.MOUSEWHEEL and screen_name == "levels":
-                # event.y: +1 up, -1 down
-                scroll_index -= event.y
-            elif event.type == pygame.MOUSEBUTTONDOWN and screen_name == "levels":
-                # Compatibility with older wheel events (4/5)
-                if event.button == 4:
-                    scroll_index -= 1
-                elif event.button == 5:
-                    scroll_index += 1
+                                _exec_game(level1_script)
 
         pygame.display.flip()
         clock.tick(60)
