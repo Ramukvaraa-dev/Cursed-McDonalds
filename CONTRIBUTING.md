@@ -16,14 +16,10 @@ Thanks for your interest in contributing!
 
 ## Packaging / releases
 
-Packaging scripts live in `packaging/`.
-
-- Windows one-file EXE: `packaging/windows/build-onefile.ps1`
-- macOS app + dmg: `packaging/macos/build.sh`, `packaging/macos/make-dmg.sh`
+If you add packaging or release automation in the future, please document it in `README.md`.
 
 ## PR guidelines
 
 - Keep PRs focused (one feature/fix at a time).
 - Prefer readable UI/layout changes over “clever” code.
-- If you touch packaging, update `packaging/README.md`.
-
+- If you add new dependencies, update `requirements.txt`.
