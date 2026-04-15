@@ -1,25 +1,56 @@
 import os
+import re
 import sys
 from pathlib import Path
 
 import pygame
 
 
-def _resolve_game_script() -> Path:
+def _extract_level_title(script_path: Path) -> str:
+    try:
+        text = script_path.read_text(encoding="utf-8", errors="ignore")
+    except Exception:
+        return script_path.stem
+
+    # Prefer an explicit window caption if present.
+    m = re.search(r'pygame\.display\.set_caption\(\s*([\'"])(.+?)\1\s*\)', text)
+    if m:
+        return m.group(2).strip()
+
+    # Or a "Season X - Level Y" string.
+    m = re.search(r'([Ss]eason\s*\d+\s*-\s*[Ll]evel\s*\d+)', text)
+    if m:
+        return m.group(1).strip()
+
+    return script_path.stem
+
+
+def _discover_levels() -> list[dict]:
     here = Path(__file__).resolve().parent
-    candidates = [
-        here / "Cursed McDonalds.py",
-        here / "Cursed Mcdonalds.py",
-        here / "Cursed McDonalds 1" / "Cursed McDonalds.py",
-        here / "Cursed McDonalds 1" / "Cursed Mcdonalds.py",
-    ]
-    for candidate in candidates:
-        if candidate.exists():
-            return candidate
-    raise FileNotFoundError(
-        "Could not find game script. Looked for: "
-        + ", ".join(str(p) for p in candidates)
-    )
+    search_roots = [here, here / "Cursed McDonalds 1"]
+    levels: list[dict] = []
+
+    for root in search_roots:
+        if not root.exists() or not root.is_dir():
+            continue
+        for script in sorted(root.glob("*.py")):
+            if script.name == "opener.py":
+                continue
+            title = _extract_level_title(script)
+            levels.append({"path": script, "title": title})
+
+    # De-dupe by absolute path
+    seen: set[Path] = set()
+    unique: list[dict] = []
+    for lvl in levels:
+        p = lvl["path"].resolve()
+        if p in seen:
+            continue
+        seen.add(p)
+        unique.append(lvl)
+
+    unique.sort(key=lambda x: (x["title"].lower(), str(x["path"]).lower()))
+    return unique
 
 
 def _exec_game(game_script: Path) -> None:
@@ -110,14 +141,12 @@ def main() -> None:
         surface.blit(shadow, (rect.x, rect.y + 6))
         surface.blit(bsurf, (rect.x, rect.y + (2 if pressed else 0)))
 
-    try:
-        game_script = _resolve_game_script()
-    except FileNotFoundError:
-        game_script = None
+    levels = _discover_levels()
+    error_text = None if levels else "No level files found."
 
     clock = pygame.time.Clock()
-    mouse_down_prev = False
-    error_text = None if game_script else "Game file not found."
+    screen_name = "home"  # "home" | "levels"
+    scroll_index = 0
 
     running = True
     while running:
@@ -137,7 +166,8 @@ def main() -> None:
         if logo:
             screen.blit(logo, (panel.right - 26 - logo.get_width(), panel.y + 26))
 
-        subtitle = font_body.render("Home", True, (70, 62, 54))
+        subtitle_text = "Home" if screen_name == "home" else "Select Level"
+        subtitle = font_body.render(subtitle_text, True, (70, 62, 54))
         screen.blit(subtitle, (panel.x + 28, panel.y + 92))
 
         pygame.draw.line(
@@ -148,12 +178,17 @@ def main() -> None:
             2,
         )
 
-        body_lines = [
-            "Press Start to launch the game.",
-            "Keys: Enter start, Esc quit",
-        ]
-        if error_text:
-            body_lines = [error_text, "Make sure the game file exists."] + body_lines
+        if screen_name == "home":
+            body_lines = [
+                "Press Start to choose a level.",
+                "Keys: Enter start, Esc quit",
+            ]
+            if error_text:
+                body_lines = [error_text, "Put level .py files next to this folder."] + body_lines
+        else:
+            body_lines = ["Pick a level to play.", "Keys: 1-9 choose, Esc back"]
+            if not levels:
+                body_lines = ["No levels found.", "Add a level .py file and restart."]
 
         y = panel.y + 156
         for line in body_lines:
@@ -161,16 +196,70 @@ def main() -> None:
             screen.blit(surf, (panel.x + 28, y))
             y += surf.get_height() + 10
 
-        # Button
-        btn_w = min(420, panel.w - 56)
-        btn_h = 60
-        btn = pygame.Rect(panel.x + (panel.w - btn_w) // 2, panel.bottom - 120, btn_w, btn_h)
-
         mouse = pygame.mouse.get_pos()
         pressed = pygame.mouse.get_pressed()[0]
-        clicked = pressed and not mouse_down_prev
-        hovered = btn.collidepoint(mouse)
-        draw_button(screen, "Start", btn, hovered=hovered, pressed=pressed and hovered)
+
+        # Buttons
+        btn_w = min(520, panel.w - 56)
+        btn_h = 58
+        gap = 14
+        home_start_btn = None
+        back_btn = None
+        level_buttons: list[tuple[pygame.Rect, dict]] = []
+        visible_levels: list[dict] = []
+        max_btns_for_scroll = 0
+
+        if screen_name == "home":
+            btn = pygame.Rect(panel.x + (panel.w - btn_w) // 2, panel.bottom - 120, btn_w, btn_h)
+            home_start_btn = btn
+            hovered = btn.collidepoint(mouse)
+            draw_button(screen, "Start", btn, hovered=hovered, pressed=pressed and hovered)
+        else:
+            list_top = panel.y + 210
+            list_bottom = panel.bottom - 88
+            area_h = max(0, list_bottom - list_top)
+            max_btns = max(1, area_h // (btn_h + gap))
+            max_btns_for_scroll = max_btns
+            max_scroll = max(0, len(levels) - max_btns)
+            scroll_index = max(0, min(scroll_index, max_scroll))
+            visible = levels[scroll_index : scroll_index + max_btns]
+            visible_levels = visible
+
+            start_y = list_top
+            for idx, lvl in enumerate(visible):
+                rect = pygame.Rect(panel.x + (panel.w - btn_w) // 2, start_y + idx * (btn_h + gap), btn_w, btn_h)
+                hovered = rect.collidepoint(mouse)
+                draw_button(
+                    screen,
+                    f"{idx+1}. {lvl['title']}",
+                    rect,
+                    hovered=hovered,
+                    pressed=pressed and hovered,
+                )
+                level_buttons.append((rect, lvl))
+
+            back = pygame.Rect(panel.x + 28, panel.bottom - 120, 170, btn_h)
+            back_btn = back
+            hovered = back.collidepoint(mouse)
+            draw_button(screen, "Back", back, hovered=hovered, pressed=pressed and hovered)
+
+            prev_btn = pygame.Rect(panel.right - 28 - 170 - 12 - 170, panel.bottom - 120, 170, btn_h)
+            next_btn = pygame.Rect(panel.right - 28 - 170, panel.bottom - 120, 170, btn_h)
+            hovered = prev_btn.collidepoint(mouse)
+            draw_button(screen, "Prev \u2190", prev_btn, hovered=hovered, pressed=pressed and hovered)
+            hovered = next_btn.collidepoint(mouse)
+            draw_button(screen, "Next \u2192", next_btn, hovered=hovered, pressed=pressed and hovered)
+
+            # Small scroll status text
+            if levels:
+                start_n = scroll_index + 1
+                end_n = min(len(levels), scroll_index + len(visible_levels))
+                status = font_hint.render(
+                    f"Showing {start_n}-{end_n} of {len(levels)} (scroll / \u2191\u2193 / \u2190\u2192)",
+                    True,
+                    (110, 100, 88),
+                )
+                screen.blit(status, (panel.x + 28, panel.y + 156))
 
         hint = font_hint.render("If the window is blank, click it to focus.", True, (110, 100, 88))
         screen.blit(hint, (panel.x + 28, panel.bottom - 28))
@@ -180,18 +269,64 @@ def main() -> None:
                 running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    running = False
+                    if screen_name == "levels":
+                        screen_name = "home"
+                    else:
+                        running = False
                 elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
-                    if game_script:
-                        pygame.quit()
-                        _exec_game(game_script)
+                    if screen_name == "home":
+                        screen_name = "levels"
+                        scroll_index = 0
+                elif screen_name == "levels":
+                    if event.key in (pygame.K_UP, pygame.K_w):
+                        scroll_index -= 1
+                    elif event.key in (pygame.K_DOWN, pygame.K_s):
+                        scroll_index += 1
+                    elif event.key in (pygame.K_LEFT, pygame.K_a):
+                        scroll_index -= max(1, max_btns_for_scroll)
+                    elif event.key in (pygame.K_RIGHT, pygame.K_d):
+                        scroll_index += max(1, max_btns_for_scroll)
+                    elif event.key == pygame.K_PAGEUP:
+                        scroll_index -= max(1, max_btns_for_scroll - 1)
+                    elif event.key == pygame.K_PAGEDOWN:
+                        scroll_index += max(1, max_btns_for_scroll - 1)
+                    elif event.key == pygame.K_HOME:
+                        scroll_index = 0
+                    elif event.key == pygame.K_END:
+                        scroll_index = max(0, len(levels) - max(1, max_btns_for_scroll))
+                    elif pygame.K_1 <= event.key <= pygame.K_9:
+                        idx = event.key - pygame.K_1
+                        if 0 <= idx < len(visible_levels):
+                            pygame.quit()
+                            _exec_game(visible_levels[idx]["path"])
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                if hovered and clicked and game_script:
-                    pygame.quit()
-                    _exec_game(game_script)
+                if screen_name == "home":
+                    if home_start_btn and home_start_btn.collidepoint(event.pos):
+                        screen_name = "levels"
+                        scroll_index = 0
+                else:
+                    if back_btn and back_btn.collidepoint(event.pos):
+                        screen_name = "home"
+                    elif "prev_btn" in locals() and prev_btn.collidepoint(event.pos):
+                        scroll_index -= max(1, max_btns_for_scroll)
+                    elif "next_btn" in locals() and next_btn.collidepoint(event.pos):
+                        scroll_index += max(1, max_btns_for_scroll)
+                    else:
+                        for rect, lvl in level_buttons:
+                            if rect.collidepoint(event.pos):
+                                pygame.quit()
+                                _exec_game(lvl["path"])
+            elif event.type == pygame.MOUSEWHEEL and screen_name == "levels":
+                # event.y: +1 up, -1 down
+                scroll_index -= event.y
+            elif event.type == pygame.MOUSEBUTTONDOWN and screen_name == "levels":
+                # Compatibility with older wheel events (4/5)
+                if event.button == 4:
+                    scroll_index -= 1
+                elif event.button == 5:
+                    scroll_index += 1
 
         pygame.display.flip()
-        mouse_down_prev = pressed
         clock.tick(60)
 
     pygame.quit()
