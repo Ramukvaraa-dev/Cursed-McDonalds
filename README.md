@@ -8,6 +8,11 @@
 
 Pygame story game with a launcher (`opener.py`) and Level 1 in `Cursed McDonalds 1/`.
 
+## Downloads (Windows + macOS)
+
+- GitHub **Releases**: download the latest `Cursed-McDonalds-windows.zip` or `Cursed-McDonalds-macOS.zip`.
+- If there’s no Release yet: GitHub **Actions** → **Build (Windows + macOS)** → download the artifacts.
+
 ## Run from source (dev)
 
 1. Install deps: `python3 -m pip install -r requirements.txt`
