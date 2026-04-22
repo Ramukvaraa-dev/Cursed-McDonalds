@@ -6,6 +6,9 @@ on:
     tags:
       - "v*"
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   build:
     strategy:
@@ -30,6 +33,12 @@ jobs:
         run: |
           pyinstaller "Cursed McDonalds.spec" --noconfirm --clean
 
+      - name: Show dist output
+        run: |
+          ls -la
+          ls -la dist || true
+          find dist -maxdepth 3 -name "*.app" -print || true
+
       - name: Package (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -43,7 +52,12 @@ jobs:
         run: |
           zip="Cursed-McDonalds-macOS.zip"
           rm -f "$zip"
-          ditto -c -k --sequesterRsrc --keepParent "dist/Cursed McDonalds.app" "$zip"
+          app_path="$(find dist -maxdepth 3 -name 'Cursed McDonalds.app' -print -quit)"
+          if [ -z "$app_path" ]; then
+            echo "ERROR: Could not find 'Cursed McDonalds.app' under dist/"
+            exit 1
+          fi
+          ditto -c -k --sequesterRsrc --keepParent "$app_path" "$zip"
 
       - name: Upload artifact (Windows)
         if: runner.os == 'Windows'
