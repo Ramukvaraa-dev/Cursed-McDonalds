@@ -21,6 +21,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Verify build spec exists
+        shell: bash
+        run: |
+          ls -la
+          test -f "Cursed McDonalds.spec"
+
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
