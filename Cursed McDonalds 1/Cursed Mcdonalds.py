@@ -147,18 +147,20 @@ story = {
     'Super special ultra combo': ('There is a human. You get hanged for cannibalism. "Hanged ending"', []),
     'Normal combo': ('You pay your whole wallet', ['Loan', 'Quit life', 'Sue McDonalds']),
     'Death combo': ('It was actually good. You are surprised', ['Run', 'Go back home', 'Pay', 'Stare', 'Eat Ronald', 'Go to hospital']),
+    'Stare': ('You stare at Ronald in disbelief. He stares back. You die. "Awkward ending"', []),    #needs to be changed
     'Run for your life': ('You trip and get killed', []),
     'Ask for him to listen': ('He kills you', []),
     'Cheap Burger': ('You die of every disease. "Every death with disease ending"', []),
     'Fancy Burger': ('It has fancy poisons. You die. "Fancy poisoning ending"', []),
     'Loan': ('Banker denies and you go out and trip. You die. "Broke Ending"', []),
     'Quit life': ('Guess what happens', []),
-    'Sue McDonalds': ('McDonalds shut down, But it will return. "Win ending"', []),
+    'Sue McDonalds': ('McDonalds shut down, But it will return. "Win ending"', ['Play again']),
     'Run': ('Ronald kills you. "No payment ending"', []),
     'Go back home': ('Ronald kills you. "No payment ending"', []),
     'Pay': ('You are $1 short. "No payment ending"', []),
     'Eat Ronald': ('"Why did you choose this ending?"', []),
-    'Go to hospital': ('There is an evil doctor, "OOF ending"', [])
+    'Go to hospital': ('There is an evil doctor, "OOF ending"', []),
+    'Play again': ('You go to McDonalds. It has a weird logo', ['Go in it', 'Walk away'])
 }
 
 current_scene = "start"
@@ -240,14 +242,17 @@ def game_loop():
 
         # Story text (wrapped)
         story_text = story[current_scene][0]
-        text_area = pygame.Rect(panel.x + 28, divider_y + 18, panel.w - 56, int(panel.h * 0.40))
+        text_area = pygame.Rect(panel.x + 28, divider_y + 18, panel.w - 56, int(panel.h * 0.55))
         lines = render_wrapped_lines(story_text, font_body, INK, text_area.w)
         y = text_area.y
         for line_surf in lines:
+            if y + line_surf.get_height() > text_area.bottom:
+                break
             line_surf.set_alpha(alpha)
             screen.blit(line_surf, (text_area.x, y))
             y += line_surf.get_height() + 6
-        
+        text_bottom_y = y
+
         # Display choices
         choices = list(story[current_scene][1])
         if not choices:
@@ -258,16 +263,52 @@ def game_loop():
         pressed = pygame.mouse.get_pressed()[0]
         clicked = pressed and not mouse_down_prev
 
-        btn_area = pygame.Rect(panel.x + 28, panel.y + int(panel.h * 0.60), panel.w - 56, panel.bottom - (panel.y + int(panel.h * 0.60)) - 18)
-        btn_w = min(520, btn_area.w)
-        btn_h = 52
-        gap = 14
-        btn_x = btn_area.x + (btn_area.w - btn_w) // 2
-        total_h = len(choices) * btn_h + (len(choices) - 1) * gap
-        start_y = btn_area.y + max(0, (btn_area.h - total_h) // 2)
+        footer_reserved = 54  # space for hint text + padding
+        btn_top = min(panel.bottom - footer_reserved - 10, text_bottom_y + 18)
+        btn_h_available = max(0, panel.bottom - footer_reserved - btn_top)
+        btn_area = pygame.Rect(panel.x + 28, btn_top, panel.w - 56, btn_h_available)
+
+        n_choices = len(choices)
+        base_btn_h = 52
+        base_gap_y = 14
+        base_gap_x = 14
+        min_btn_h = 34
+        min_gap_y = 8
+
+        cols = 1
+        while cols < min(3, n_choices) + 1:
+            rows = (n_choices + cols - 1) // cols
+            btn_h = base_btn_h
+            gap_y = base_gap_y
+            total_h = rows * btn_h + (rows - 1) * gap_y
+            if btn_area.h > 0 and total_h > btn_area.h:
+                scale = btn_area.h / float(total_h)
+                btn_h = max(min_btn_h, int(base_btn_h * scale))
+                gap_y = max(min_gap_y, int(base_gap_y * scale))
+                total_h = rows * btn_h + (rows - 1) * gap_y
+
+            if total_h <= btn_area.h or cols == min(3, n_choices):
+                break
+            cols += 1
+
+        rows = (n_choices + cols - 1) // cols
+        gap_x = base_gap_x if cols > 1 else 0
+        btn_w = (btn_area.w - (cols - 1) * gap_x) // cols if cols > 0 else btn_area.w
+        if cols == 1:
+            btn_w = min(520, btn_w)
+        total_w = cols * btn_w + (cols - 1) * gap_x
+        start_x = btn_area.x + max(0, (btn_area.w - total_w) // 2)
+        start_y = btn_area.y + max(0, (btn_area.h - (rows * btn_h + (rows - 1) * gap_y)) // 2)
 
         for idx, choice in enumerate(choices):
-            rect = pygame.Rect(btn_x, start_y + idx * (btn_h + gap), btn_w, btn_h)
+            row = idx // cols
+            col = idx % cols
+            rect = pygame.Rect(
+                start_x + col * (btn_w + gap_x),
+                start_y + row * (btn_h + gap_y),
+                btn_w,
+                btn_h,
+            )
             hovered = rect.collidepoint(mouse)
             draw_button(screen, f"{idx+1}. {choice}", rect, hovered=hovered, pressed=pressed and hovered, alpha=alpha)
 

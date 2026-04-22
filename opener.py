@@ -77,6 +77,7 @@ def _run_game(game_script: Path) -> None:
     os.chdir(str(game_script.parent))
     # Run in-process so this works inside a PyInstaller-bundled app.
     runpy.run_path(str(game_script), run_name="__main__")
+    sys.exit(0)
 
 
 def main() -> None:
