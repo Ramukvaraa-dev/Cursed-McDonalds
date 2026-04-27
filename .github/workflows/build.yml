@@ -106,28 +106,28 @@ jobs:
 
       - name: Upload artifact (Windows)
         if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Cursed-McDonalds-windows
           path: Cursed-McDonalds-windows.zip
 
       - name: Upload installer (Windows)
         if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Cursed-McDonalds-installer-windows
           path: dist_installer/Cursed-McDonalds-Setup-windows.exe
 
       - name: Upload artifact (macOS)
         if: runner.os == 'macOS'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Cursed-McDonalds-macOS
           path: Cursed-McDonalds-macOS.zip
 
       - name: Upload installer (macOS)
         if: runner.os == 'macOS'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Cursed-McDonalds-installer-macOS
           path: Cursed-McDonalds-macOS.dmg
