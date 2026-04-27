@@ -8,6 +8,10 @@ __pycache__/
 venv/
 env/
 
+# Tool caches
+.ruff_cache/
+.pytest_cache/
+
 # PyInstaller
 build/
 dist/

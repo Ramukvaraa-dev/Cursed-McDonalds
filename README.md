@@ -4,8 +4,8 @@
 
 ![Cursed McDonalds Logo](Cursed%20McDonalds%201/Cursed%20McDonalds%20Logo.png)
 
-[![Build (Windows + macOS)](https://github.com/Ramukvaraa-dev/Cursed-McDonald/actions/workflows/build.yml/badge.svg)](https://github.com/Ramukvaraa-dev/Cursed-McDonald/actions/workflows/build.yml)
-[![Quality](https://github.com/Ramukvaraa-dev/Cursed-McDonald/actions/workflows/quality.yml/badge.svg)](https://github.com/Ramukvaraa-dev/Cursed-McDonald/actions/workflows/quality.yml)
+[![Build (Windows + macOS)](https://github.com/Ramukvaraa-dev/Cursed-McDonalds/actions/workflows/build.yml/badge.svg)](https://github.com/Ramukvaraa-dev/Cursed-McDonalds/actions/workflows/build.yml)
+[![Quality](https://github.com/Ramukvaraa-dev/Cursed-McDonalds/actions/workflows/quality.yml/badge.svg)](https://github.com/Ramukvaraa-dev/Cursed-McDonalds/actions/workflows/quality.yml)
 
 Pygame story game with a launcher and a playable Level 1.
 
@@ -20,6 +20,7 @@ A choose-your-story game called Cursed McDonalds with a launcher (`opener.py`) a
 - [Project layout](#project-layout)
 - [Controls](#controls)
 - [Roadmap](#roadmap)
+- [Docs](#docs)
 - [Contributing](#contributing)
 - [Security](#security)
 - [Changelog](#changelog)
@@ -66,6 +67,11 @@ python opener.py
 - Levels 2–10 (currently “Coming soon” in the level select UI)
 - Save/load and settings menu
 - More reliable cross-platform packaging
+
+## Docs
+
+- Architecture: `docs/ARCHITECTURE.md`
+- Releasing: `docs/RELEASING.md`
 
 ## Contributing
 
