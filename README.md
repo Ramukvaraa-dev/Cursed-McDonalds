@@ -4,35 +4,68 @@
 
 ![Cursed McDonalds Logo](Cursed%20McDonalds%201/Cursed%20McDonalds%20Logo.png)
 
+[![Build (Windows + macOS)](https://github.com/Ramukvaraa-dev/Cursed-McDonald/actions/workflows/build.yml/badge.svg)](https://github.com/Ramukvaraa-dev/Cursed-McDonald/actions/workflows/build.yml)
+[![Quality](https://github.com/Ramukvaraa-dev/Cursed-McDonald/actions/workflows/quality.yml/badge.svg)](https://github.com/Ramukvaraa-dev/Cursed-McDonald/actions/workflows/quality.yml)
+
+Pygame story game with a launcher and a playable Level 1.
+
 </div>
-A choose your story called Cursed McDonalds with a launcher (`opener.py`) and Level 1 in `Cursed McDonalds 1/`.
 
-## Downloads (Windows + macOS)
+A choose-your-story game called Cursed McDonalds with a launcher (`opener.py`) and Level 1 in `Cursed McDonalds 1/`.
 
-- GitHub **Releases**: download the latest installer:
-  - Windows: `Cursed-McDonalds-Setup-windows.exe`
-  - macOS: `Cursed-McDonalds-macOS.dmg`
-- Portable builds are also available:
+## Table of contents
+
+- [Downloads](#downloads)
+- [Run from source](#run-from-source)
+- [Project layout](#project-layout)
+- [Controls](#controls)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [Security](#security)
+- [Changelog](#changelog)
+
+## Downloads
+
+Grab the latest builds from GitHub **Releases**:
+
+- Windows installer: `Cursed-McDonalds-Setup-windows.exe`
+- macOS installer: `Cursed-McDonalds-macOS.dmg`
+- Portable builds:
   - Windows: `Cursed-McDonalds-windows.zip`
   - macOS: `Cursed-McDonalds-macOS.zip`
-- If there’s no Release yet: GitHub **Actions** → **Build (Windows + macOS)** → download the artifacts.
 
-## Run from source (dev)
+If there isn’t a Release yet, open GitHub **Actions** → **Build (Windows + macOS)** and download the artifacts.
 
-1. Install deps: `python3 -m pip install -r requirements.txt`
-2. Start: `python3 opener.py`
+## Run from source
+
+Requirements: Python 3.11+ (recommended).
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
+python -m pip install -r requirements.txt
+python opener.py
+```
+
+## Project layout
+
+- `opener.py`: launcher (main entry point for dev)
+- `Cursed McDonalds 1/`: Level 1 game code/assets
+- `installer/`: Windows/macOS installer build scripts
+- `.github/workflows/`: CI (build + quality checks)
 
 ## Controls
 
 - Mouse: click buttons
 - Keyboard:
-  - `Enter`: Start / launch Level 1 (when available)
-  - `Esc`: Back / quit
+  - `Enter`: start / launch Level 1 (when available)
+  - `Esc`: back / quit
 
-## Levels
+## Roadmap
 
-- Level Select shows Levels 1–10.
-- Only **Level 1** is playable right now. Hover Levels 2–10 to see “Coming soon”.
+- Levels 2–10 (currently “Coming soon” in the level select UI)
+- Save/load and settings menu
+- More reliable cross-platform packaging
 
 ## Contributing
 
@@ -41,3 +74,7 @@ PRs and issues are welcome. See `CONTRIBUTING.md`.
 ## Security
 
 See `SECURITY.md`.
+
+## Changelog
+
+See `CHANGELOG.md`.
