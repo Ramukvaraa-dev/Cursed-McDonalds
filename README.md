@@ -5,8 +5,7 @@
 ![Cursed McDonalds Logo](Cursed%20McDonalds%201/Cursed%20McDonalds%20Logo.png)
 
 </div>
-
-Pygame story game with a launcher (`opener.py`) and Level 1 in `Cursed McDonalds 1/`.
+A choose your story called Cursed McDonalds with a launcher (`opener.py`) and Level 1 in `Cursed McDonalds 1/`.
 
 ## Downloads (Windows + macOS)
 
