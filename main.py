@@ -95,12 +95,16 @@ def _page(shell: str, *, title: str = "Cursed McDonald's") -> str:
         --border: rgba(127, 127, 127, .30);
       }}
 
+      html {{
+        background: transparent;
+      }}
+
       body {{
         margin: 0;
         font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
         color: var(--ink);
         min-height: 100vh;
-        background: linear-gradient(180deg, var(--paper), var(--paper2));
+        background: transparent;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
       }}
