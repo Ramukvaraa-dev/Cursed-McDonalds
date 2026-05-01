@@ -154,13 +154,14 @@ story = {
     'Fancy Burger': ('It has fancy poisons. You die. "Fancy poisoning ending"', []),
     'Loan': ('Banker denies and you go out and trip. You die. "Broke Ending"', []),
     'Quit life': ('Guess what happens', []),
-    'Sue McDonalds': ('McDonalds shut down, But it will return. "Win ending"', ['Play again']),
+    'Sue McDonalds': ('McDonalds shut down, But it will return.\nWIN ENDING', ['Play again']), 
     'Run': ('Ronald kills you. "No payment ending"', []),
     'Go back home': ('Ronald kills you. "No payment ending"', []),
     'Pay': ('You are $1 short. "No payment ending"', []),
     'Eat Ronald': ('"Why did you choose this ending?"', []),
     'Go to hospital': ('There is an evil doctor, "OOF ending"', []),
-    'Play again': ('You go to McDonalds. It has a weird logo', ['Go in it', 'Walk away'])
+    'Play again': ('You go to McDonalds. It has a weird logo', ['Go in it', 'Walk away', 'Question reality']),
+    'Question reality': ('You question reality so hard that you break the fourth wall and escape the game (Secret ending, can only be achieved by winning the game). "Fourth wall escape ending"', ['Play again']),
 }
 
 current_scene = "start"
@@ -326,7 +327,20 @@ def game_loop():
         pygame.display.flip()
         mouse_down_prev = pressed
         clock.tick(60)  # Smoother UI
+        
+        # Show frame rate in debug mode (optional)
+        # fps_text = font_hint.render(f"FPS: {int(clock.get_fps())}", True, (100, 100, 100))
+        # screen.blit(fps_text, (10, 10))
     
     pygame.quit()
 
-game_loop()
+# Run the game with error handling
+if __name__ == "__main__":
+    try:
+        game_loop()
+    except KeyboardInterrupt:
+        print("Game interrupted by user")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        import traceback
+        traceback.print_exc()
