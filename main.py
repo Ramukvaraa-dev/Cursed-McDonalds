@@ -28,20 +28,33 @@ LEVEL1_STORY: dict[str, tuple[str, list[str]]] = {
     "Walk away": ("A Ronald tells you to go in", ["Listen to him", "Ignore him"]),
     "Listen": ("He becomes your friend", ["Buy a burger", "Go home"]),
     "Ignore": ("Ronald gets angry and gets a knife", ["Run for your life", "Ask for him to listen"]),
-    "Listen to him": ("Ronald becomes your friend", ["Buy a burger", "Go home"]),
-    "Ignore him": ("Ronald gets angry and gets a knife", ["Run for your life", "Ask for him to listen"]),
-    "Buy a burger": ("You buy a burger. It is cursed.\nIt says: 'Pay 100 dollars'", ["Pay", "Run"]),
-    "Go home": ("You go home. Ronald follows you.\nHe says: 'Pay 100 dollars'", ["Pay", "Go back home"]),
-    "Pay": ("You are $1 short. \"No payment ending\"", []),
-    "Run": ("Ronald kills you. \"No payment ending\"", []),
-    "Go back home": ("Ronald kills you. \"No payment ending\"", []),
-    "Run for your life": ("You trip and get killed", []),
-    "Ask for him to listen": ("He kills you", []),
+    "Listen to him": (
+        "You go into McDonalds. You have to buy a burger. Choose a combo",
+        ["Super special ultra combo", "Normal combo", "Death combo"],
+    ),
+    "Ignore him": ('Ronald kills you. "Death by a bloodthirsty evil devilish Ronald"', []),
+    "Buy a burger": ("The burgers are way too expensive", ["Cheap Burger", "Fancy Burger"]),
+    "Go home": (
+        'You trip on a rock. You are unconscious. Ronald takes you to McDonalds and makes you into a burger. "Extra special burger ending"',
+        [],
+    ),
+    "Super special ultra combo": (
+        'There is a human. You get hanged for cannibalism. "Hanged ending"',
+        [],
+    ),
+    "Normal combo": ("You pay your whole wallet", ["Loan", "Quit life", "Sue McDonalds"]),
+    "Death combo": ("It was actually good. You are surprised", ["Run", "Go back home", "Pay", "Stare", "Eat Ronald", "Go to hospital"]),
     "Cheap Burger": ("You die of every disease. \"Every death with disease ending\"", []),
     "Fancy Burger": ("It has fancy poisons. You die. \"Fancy poisoning ending\"", []),
     "Loan": ("Banker denies and you go out and trip. You die. \"Broke Ending\"", []),
     "Quit life": ("Guess what happens", []),
     "Sue McDonalds": ("McDonalds shut down, But it will return.\nWIN ENDING", ["Play again"]),
+    "Run": ("Ronald kills you. \"No payment ending\"", []),
+    "Go back home": ("Ronald kills you. \"No payment ending\"", []),
+    "Pay": ("You are $1 short. \"No payment ending\"", []),
+    "Stare": ('You stare at Ronald in disbelief. He stares back. You die. "Awkward ending"', []),
+    "Run for your life": ("You trip and get killed", []),
+    "Ask for him to listen": ("He kills you", []),
     "Eat Ronald": ("\"Why did you choose this ending?\"", []),
     "Go to hospital": ("There is an evil doctor, \"OOF ending\"", []),
     "Play again": (
@@ -53,8 +66,6 @@ LEVEL1_STORY: dict[str, tuple[str, list[str]]] = {
         '(Secret ending, can only be achieved by winning the game). "Fourth wall escape ending"',
         ["Play again"],
     ),
-    # Keep the original odd/placeholder ending labels present in the pygame script.
-    "Stare": ('You stare at Ronald in disbelief. He stares back. You die. "Awkward ending"', []),
 }
 
 
