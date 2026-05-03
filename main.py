@@ -369,9 +369,8 @@ def levels() -> str:
 <div class="grid">
   {grid_html}
 </div>
-<div style="display:flex; justify-content: space-between; margin-top: 22px; gap: 12px; flex-wrap: wrap;">
+<div style="display:flex; justify-content: flex-start; margin-top: 22px; gap: 12px; flex-wrap: wrap;">
   <a class="btn btn-secondary" href="/">Back</a>
-  <a class="btn btn-secondary" href="{GITHUB_REPO_URL}" rel="noreferrer">Project</a>
 </div>
 <div class="hint">Tip: if you want to play now, download the project and run <span class="kbd">python3 opener.py</span>.</div>
 """
