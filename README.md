@@ -7,7 +7,7 @@
 [![Build (Windows + macOS)](https://github.com/Ramukvaraa-dev/Cursed-McDonalds/actions/workflows/build.yml/badge.svg)](https://github.com/Ramukvaraa-dev/Cursed-McDonalds/actions/workflows/build.yml)
 [![Quality](https://github.com/Ramukvaraa-dev/Cursed-McDonalds/actions/workflows/quality.yml/badge.svg)](https://github.com/Ramukvaraa-dev/Cursed-McDonalds/actions/workflows/quality.yml)
 
-Pygame story game with a launcher and a playable Level 1.
+Pygame story game with a launcher and a playable Level 1. Play the game on the official website https://sites.google.com/view/cursedmcdonalds/
 
 </div>
 
