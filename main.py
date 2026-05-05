@@ -85,18 +85,19 @@ def _page(shell: str, *, title: str = "Cursed McDonald's") -> str:
     <link rel="icon" type="image/png" href="/static/Cursed%20McDonalds%20Logo.png" />
     <style>
       :root {{
-        color-scheme: light dark;
-        --ink: rgb(27, 24, 20);
-        --paper: rgb(255, 250, 242);
-        --paper2: rgb(255, 238, 214);
-        --tomato: rgb(222, 29, 29);
-        --muted: rgba(90, 80, 70, .92);
-        --shadow: rgba(0, 0, 0, .18);
-        --border: rgba(127, 127, 127, .30);
+        color-scheme: dark;
+        --bg: rgb(5, 5, 7);
+        --panel: rgb(14, 14, 18);
+        --ink: rgba(245, 245, 250, .96);
+        --muted: rgba(210, 210, 220, .85);
+        --accent: rgb(222, 29, 29);
+        --accent2: rgb(255, 60, 90);
+        --shadow: rgba(0, 0, 0, .55);
+        --border: rgba(255, 60, 90, .22);
       }}
 
       html {{
-        background: transparent;
+        background: var(--bg);
       }}
 
       body {{
@@ -104,7 +105,11 @@ def _page(shell: str, *, title: str = "Cursed McDonald's") -> str:
         font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
         color: var(--ink);
         min-height: 100vh;
-        background: transparent;
+        background:
+          radial-gradient(1200px 720px at 50% 12%, rgba(222, 29, 29, .10), transparent 55%),
+          radial-gradient(900px 600px at 18% 85%, rgba(255, 60, 90, .08), transparent 52%),
+          radial-gradient(900px 600px at 82% 82%, rgba(255, 255, 255, .04), transparent 60%),
+          var(--bg);
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
       }}
@@ -118,7 +123,7 @@ def _page(shell: str, *, title: str = "Cursed McDonald's") -> str:
       .panel {{
         max-width: 760px;
         margin: 0 auto;
-        background: var(--paper);
+        background: var(--panel);
         border: 1px solid var(--border);
         border-radius: 26px;
         box-shadow: 0 18px 40px var(--shadow);
@@ -138,11 +143,12 @@ def _page(shell: str, *, title: str = "Cursed McDonald's") -> str:
         font-size: 48px;
         line-height: 1.06;
         letter-spacing: .2px;
+        text-shadow: 0 0 18px rgba(222, 29, 29, .22);
       }}
 
       .subtitle {{
         margin-top: 10px;
-        color: rgba(70, 62, 54, .95);
+        color: rgba(220, 220, 230, .70);
         font-family: ui-serif, "Palatino", "Palatino Linotype", Georgia, serif;
         font-size: 20px;
       }}
@@ -150,7 +156,7 @@ def _page(shell: str, *, title: str = "Cursed McDonald's") -> str:
       hr {{
         border: 0;
         height: 2px;
-        background: rgba(235, 220, 201, 1);
+        background: linear-gradient(90deg, transparent, rgba(255, 60, 90, .35), transparent);
         margin: 16px 0 18px;
       }}
 
@@ -159,6 +165,7 @@ def _page(shell: str, *, title: str = "Cursed McDonald's") -> str:
         max-width: 42vw;
         height: auto;
         border-radius: 14px;
+        filter: drop-shadow(0 8px 18px rgba(0,0,0,.55));
       }}
 
       .body {{
@@ -169,7 +176,7 @@ def _page(shell: str, *, title: str = "Cursed McDonald's") -> str:
 
       .hint {{
         margin-top: 18px;
-        color: rgba(110, 100, 88, .98);
+        color: rgba(200, 200, 210, .70);
         font-size: 14px;
       }}
 
@@ -191,26 +198,26 @@ def _page(shell: str, *, title: str = "Cursed McDonald's") -> str:
       }}
 
       .btn-primary {{
-        background: var(--tomato);
+        background: linear-gradient(180deg, rgba(222, 29, 29, 1), rgba(168, 18, 18, 1));
         color: white;
-        box-shadow: 0 12px 0 rgba(0,0,0,.12);
+        box-shadow: 0 12px 0 rgba(0,0,0,.35);
       }}
 
       .btn-primary:hover {{
-        background: var(--paper);
-        color: var(--tomato);
-        border-color: var(--tomato);
+        background: rgba(255, 255, 255, .06);
+        color: rgba(255, 220, 230, .95);
+        border-color: rgba(255, 60, 90, .65);
       }}
 
       .btn-secondary {{
-        background: var(--paper);
-        color: var(--tomato);
-        border-color: var(--tomato);
+        background: rgba(255, 255, 255, .04);
+        color: rgba(255, 220, 230, .92);
+        border-color: rgba(255, 60, 90, .45);
         box-shadow: 0 12px 0 rgba(0,0,0,.08);
       }}
 
       .btn-secondary:hover {{
-        background: rgba(255, 255, 255, .4);
+        background: rgba(255, 255, 255, .07);
       }}
 
       .btn:active {{
@@ -236,9 +243,9 @@ def _page(shell: str, *, title: str = "Cursed McDonald's") -> str:
       }}
 
       .disabled {{
-        background: rgb(232, 224, 214);
-        color: rgb(120, 110, 100);
-        border-color: rgba(200, 190, 178, .95);
+        background: rgba(255,255,255,.03);
+        color: rgba(200, 200, 210, .45);
+        border-color: rgba(255, 60, 90, .12);
         cursor: not-allowed;
         box-shadow: none;
       }}
@@ -253,9 +260,9 @@ def _page(shell: str, *, title: str = "Cursed McDonald's") -> str:
         position: absolute;
         inset: -220px -120px -220px -120px;
         background:
-          radial-gradient(circle at 12% 18%, rgba(255, 197, 46, .95) 0 120px, transparent 121px),
-          radial-gradient(circle at 88% 10%, rgba(255, 216, 94, .95) 0 92px, transparent 93px),
-          radial-gradient(circle at 86% 74%, rgba(255, 190, 70, .95) 0 145px, transparent 146px);
+          radial-gradient(circle at 12% 18%, rgba(222, 29, 29, .16) 0 140px, transparent 141px),
+          radial-gradient(circle at 88% 10%, rgba(255, 60, 90, .12) 0 110px, transparent 111px),
+          radial-gradient(circle at 86% 74%, rgba(255, 255, 255, .06) 0 160px, transparent 161px);
         pointer-events: none;
         z-index: 0;
         filter: saturate(1.05);
@@ -266,17 +273,36 @@ def _page(shell: str, *, title: str = "Cursed McDonald's") -> str:
         z-index: 1;
       }}
 
+      /* Scanlines + subtle film grain (pure CSS) */
+      .panel::after {{
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+          repeating-linear-gradient(
+            180deg,
+            rgba(0,0,0,0.00) 0px,
+            rgba(0,0,0,0.00) 2px,
+            rgba(0,0,0,0.10) 3px
+          ),
+          radial-gradient(900px 420px at 50% 0%, rgba(255, 60, 90, .07), transparent 65%);
+        opacity: .55;
+        mix-blend-mode: overlay;
+        border-radius: 26px;
+      }}
+
       .kbd {{
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        background: rgba(127,127,127,.14);
-        border: 1px solid rgba(127,127,127,.22);
+        background: rgba(255,255,255,.06);
+        border: 1px solid rgba(255, 60, 90, .18);
         padding: 1px 6px;
         border-radius: 7px;
         font-size: 14px;
       }}
 
       a {{
-        color: var(--tomato);
+        color: rgba(255, 90, 120, .95);
       }}
 
       .story {{
@@ -288,11 +314,50 @@ def _page(shell: str, *, title: str = "Cursed McDonald's") -> str:
       .story p {{
         margin: 0 0 10px;
       }}
+
+      /* Occasional glitch effect */
+      .glitch {{
+        position: relative;
+      }}
+      .glitch::before,
+      .glitch::after {{
+        content: attr(data-text);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        overflow: hidden;
+        opacity: .75;
+        pointer-events: none;
+      }}
+      .glitch::before {{
+        transform: translate(1px, 0);
+        color: rgba(0, 255, 255, .35);
+        clip-path: inset(0 0 55% 0);
+      }}
+      .glitch::after {{
+        transform: translate(-1px, 0);
+        color: rgba(255, 0, 120, .35);
+        clip-path: inset(45% 0 0 0);
+      }}
+
+      @keyframes glitch-jitter {{
+        0% {{ transform: translate(0,0); filter: none; }}
+        20% {{ transform: translate(0.5px,-0.5px); filter: contrast(1.05) saturate(1.05); }}
+        40% {{ transform: translate(-0.8px,0.6px); filter: contrast(1.12) saturate(1.12); }}
+        60% {{ transform: translate(0.6px,0.2px); filter: contrast(1.06); }}
+        80% {{ transform: translate(-0.4px,-0.4px); filter: contrast(1.10); }}
+        100% {{ transform: translate(0,0); filter: none; }}
+      }}
+
+      .glitching {{
+        animation: glitch-jitter 160ms linear 1;
+      }}
     </style>
   </head>
   <body>
     <div class="wrap">
-      <div class="panel blob-bg">
+      <div class="panel blob-bg" style="position: relative;">
         {shell}
       </div>
     </div>
@@ -313,7 +378,7 @@ def index() -> str:
     shell = f"""\
 <div class="top">
   <div>
-    <h1>Cursed McDonald's</h1>
+    <h1 class="glitch" data-text="Cursed McDonald's">Cursed McDonald's</h1>
     <div class="subtitle">Home</div>
   </div>
   <div>{logo_html}</div>
@@ -354,7 +419,7 @@ def levels() -> str:
     shell = f"""\
 <div class="top">
   <div>
-    <h1>Cursed McDonald's</h1>
+    <h1 class="glitch" data-text="Cursed McDonald's">Cursed McDonald's</h1>
     <div class="subtitle">Select Level</div>
   </div>
   <div>{logo_html}</div>
@@ -384,7 +449,7 @@ def level_detail(level_num: int) -> str:
         shell = f"""\
 <div class="top">
   <div>
-    <h1>Cursed McDonald's</h1>
+    <h1 class="glitch" data-text="Cursed McDonald's">Cursed McDonald's</h1>
     <div class="subtitle">Level {level_num}</div>
   </div>
 </div>
@@ -403,7 +468,7 @@ def level_detail(level_num: int) -> str:
     shell = f"""\
 <div class="top">
   <div>
-    <h1>Cursed McDonald's</h1>
+    <h1 class="glitch" data-text="Cursed McDonald's">Cursed McDonald's</h1>
     <div class="subtitle">Level 1</div>
   </div>
 </div>
@@ -434,7 +499,7 @@ def play_level1() -> str:
     shell = f"""\
 <div class="top">
   <div>
-    <h1>Cursed McDonald's</h1>
+    <h1 id="gameTitle" class="glitch" data-text="Cursed McDonald's">Cursed McDonald's</h1>
     <div class="subtitle">Season 1 - Level 1</div>
   </div>
   <div>{logo_html}</div>
@@ -453,8 +518,22 @@ def play_level1() -> str:
   const STORY = {story_json};
   let current = "start";
 
+  const titleEl = document.getElementById("gameTitle");
   const sceneTextEl = document.getElementById("sceneText");
   const choicesEl = document.getElementById("choices");
+
+  function maybeGlitch() {{
+    // Short, rare glitch bursts.
+    if (Math.random() > 0.08) return;
+    titleEl.classList.add("glitching");
+    sceneTextEl.classList.add("glitching");
+    choicesEl.classList.add("glitching");
+    setTimeout(() => {{
+      titleEl.classList.remove("glitching");
+      sceneTextEl.classList.remove("glitching");
+      choicesEl.classList.remove("glitching");
+    }}, 180);
+  }}
 
   function setScene(key) {{
     current = key;
@@ -478,7 +557,22 @@ def play_level1() -> str:
     sceneTextEl.style.opacity = "0";
     choicesEl.style.opacity = "0";
 
-    const text = getText();
+    let text = getText();
+    // Occasionally corrupt a few characters for a split second.
+    if (Math.random() < 0.04) {{
+      const symbols = ["#", "@", "%", "⟡", "⟠", "∎", "░", "▒", "▓"];
+      const chars = text.split("");
+      for (let i = 0; i < chars.length; i++) {{
+        if (chars[i] !== " " && Math.random() < 0.02) {{
+          chars[i] = symbols[Math.floor(Math.random() * symbols.length)];
+        }}
+      }}
+      text = chars.join("");
+      setTimeout(() => {{
+        // Re-render quickly to restore.
+        if (document.visibilityState === "visible") render();
+      }}, 120);
+    }}
     const html = text
       .split("\\n")
       .map((line) => `<p>${{escapeHtml(line)}}</p>`)
@@ -507,6 +601,7 @@ def play_level1() -> str:
       choicesEl.style.transition = "opacity 180ms ease";
       sceneTextEl.style.opacity = "1";
       choicesEl.style.opacity = "1";
+      maybeGlitch();
     }});
   }}
 
