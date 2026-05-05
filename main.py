@@ -511,8 +511,11 @@ def play_level1() -> str:
 <div id="choices" class="grid" style="grid-template-columns: 1fr; margin-top: 16px;"></div>
 
 <div class="hint">
-  Keys: <span class="kbd">1-9</span> choose, <span class="kbd">Esc</span> back to levels
+  Keys: <span class="kbd">1-9</span> choose, <span class="kbd">Esc</span> back to levels ·
+  Audio: <span class="kbd">M</span> mute
 </div>
+
+<audio id="bgMusic" src="/static/bg-music.mp3" preload="auto" loop></audio>
 
 <script>
   const STORY = {story_json};
@@ -521,6 +524,24 @@ def play_level1() -> str:
   const titleEl = document.getElementById("gameTitle");
   const sceneTextEl = document.getElementById("sceneText");
   const choicesEl = document.getElementById("choices");
+  const bgMusic = document.getElementById("bgMusic");
+  let audioStarted = false;
+
+  function startAudio() {{
+    if (audioStarted) return;
+    audioStarted = true;
+    try {{
+      bgMusic.volume = 0.35;
+    }} catch {{}}
+    bgMusic.play().catch(() => {{
+      // Autoplay is often blocked until a user gesture; we'll try again on input.
+      audioStarted = false;
+    }});
+  }}
+
+  function toggleMute() {{
+    bgMusic.muted = !bgMusic.muted;
+  }}
 
   function maybeGlitch() {{
     // Short, rare glitch bursts.
@@ -628,8 +649,13 @@ def play_level1() -> str:
   }}
 
   document.addEventListener("keydown", (e) => {{
+    startAudio();
     if (e.key === "Escape") {{
       window.location.href = "/levels";
+      return;
+    }}
+    if (e.key === "m" || e.key === "M") {{
+      toggleMute();
       return;
     }}
     if (e.key >= "1" && e.key <= "9") {{
@@ -642,6 +668,11 @@ def play_level1() -> str:
       if (choices.length === 1) onChoose(choices[0]);
     }}
   }});
+
+  // Try to start music as soon as the user interacts.
+  document.addEventListener("pointerdown", () => startAudio(), {{ once: true }});
+  document.addEventListener("touchstart", () => startAudio(), {{ once: true }});
+  document.addEventListener("click", () => startAudio(), {{ once: true }});
 
   render();
 </script>
